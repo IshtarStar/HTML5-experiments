@@ -27,6 +27,14 @@
         init();
     });
 
+    let mouseX = canvas.width / 2;
+    let mouseY = canvas.height / 2;
+
+    window.addEventListener('mousemove', (event) => {
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+    });
+
     const starCount = 10000;
     const stars = [];
 
@@ -41,9 +49,10 @@
         }
 
         drawTrail() {
-            const trailFactor = 10;
+            const trailFactor = 12;
             const maxTrailLength = this.radius * trailFactor;
-            const trailLength = maxTrailLength * (1 - this.z / canvas.width);
+            const distanceToCenter = Math.sqrt(Math.pow(this.x - canvas.width / 2, 2) + Math.pow(this.y - canvas.height / 2, 2));
+            const trailLength = maxTrailLength * (distanceToCenter / (canvas.width / 2));
 
             const angle = Math.atan2(this.y - canvas.height / 2, this.x - canvas.width / 2);
             const startX = this.x - Math.cos(angle) * trailLength;
@@ -72,9 +81,12 @@
         }
 
         update() {
-            this.z += 0.1;
-            if (this.z >= canvas.width) {
-                this.z = 0;
+            const maxZ = canvas.width;
+            const minZ = 0;
+            const speed = 0.1;
+            this.z = (this.z + speed > maxZ) ? minZ : this.z + speed;
+
+            if (this.z === minZ) {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
                 this.radius = this.originalRadius;
@@ -90,11 +102,12 @@
         }
     }
 
-        function init() {
+    function init() {
         stars.length = 0;
         for (let i = 0; i < starCount; i++) {
             const x = Math.random() * canvas.width;
             const y = Math.random() * canvas.height;
+
             const z = Math.random() * (canvas.width - 300) + 300;
             const radius = Math.random() * 2;
             const color = `rgba(255, 255, 255, ${1 - z / canvas.width})`;
@@ -107,7 +120,14 @@
         requestAnimationFrame(animate);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const offsetX = (mouseX - centerX) / 100;
+        const offsetY = (mouseY - centerY) / 100;
+
         for (const star of stars) {
+            star.x += offsetX;
+            star.y += offsetY;
             star.update();
             star.draw();
         }
