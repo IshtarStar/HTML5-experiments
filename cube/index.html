@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Three.js Cube Demo</title>
+    <meta http-equiv="Access-Control-Allow-Origin" content="*">
     <style>
         body {
             margin: 0;
@@ -34,15 +35,41 @@
         camera.updateProjectionMatrix();
     }
 
-    // Create a cube
     var geometry = new THREE.BoxGeometry(9, 9, 9);
-    var material = new THREE.MeshStandardMaterial({
-        color: 0xffffff,
-        roughness: 0.5,
-        metalness: 0.5
-    });
-    var cube = new THREE.Mesh(geometry, material);
+    var material = {color: 0xffffff, roughness: 0.5, metalness: 0.5};
+    var materials = [
+        new THREE.MeshStandardMaterial(material),
+        new THREE.MeshStandardMaterial(material),
+        new THREE.MeshStandardMaterial(material),
+        new THREE.MeshStandardMaterial(material),
+        new THREE.MeshStandardMaterial(material),
+        new THREE.MeshStandardMaterial(material)
+    ];
+
+    var textureLoader = new THREE.TextureLoader();
+    var textureNames = ['a.png', 'b.png', 'c.png', 'd.png', 'e.png', 'f.png'];
+    for (var i = 0; i < materials.length; i++) {
+        (function (i) {
+            textureLoader.load(
+                textureNames[i],
+                function (texture) {
+                    materials[i].map = texture;
+                    materials[i].needsUpdate = true;
+                },
+                function (xhr) {
+                    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                },
+                function (xhr) {
+                    console.log('An error occurred');
+                    materials[i] = new THREE.MeshStandardMaterial({color: 0xffffff});
+                }
+            );
+        })(i);
+    }
+
+    var cube = new THREE.Mesh(geometry, materials);
     scene.add(cube);
+
 
     // Create lights
     var light1 = new THREE.DirectionalLight(0xffffff, 0.5);
