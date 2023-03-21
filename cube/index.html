@@ -142,6 +142,29 @@
         };
     });
 
+    function adjustCameraFov(distance) {
+        // calculate new field of view
+        const verticalFov = 75; // default vertical field of view
+        const horizontalFov = 2 * Math.atan((window.innerWidth / 2) / distance) * (180 / Math.PI); // calculate horizontal field of view
+        const fov = Math.max(verticalFov, horizontalFov); // choose the larger of the two values
+
+        // set new field of view
+        camera.fov = fov;
+        camera.updateProjectionMatrix();
+    }
+
+
+    // Handle mouse wheel event
+    document.addEventListener('wheel', function (event) {
+        event.preventDefault();
+
+        var scaleFactor = 1.05;
+        var newScale = cube.scale.x * (event.deltaY > 0 ? scaleFactor : 1 / scaleFactor);
+        newScale = Math.min(Math.max(newScale, 0.8), 1.7); // begrenze die Skalierung auf 0,5 bis 2
+
+        cube.scale.set(newScale, newScale, newScale);
+    });
+
     // Animate the cube rotation and shadow rendering
     function animate() {
         requestAnimationFrame(animate);
