@@ -4,98 +4,133 @@
     <meta charset="UTF-8">
     <title>Three.js Cube Demo</title>
     <style>
-	body {
-	    margin: 0;
-	    background-color: black;
-	    overflow: hidden;
-	}
-	canvas {
-	    width: 100%;
-	    height: 100%;
-	    margin: 0;
-	}
+        body {
+            margin: 0;
+            background-color: black;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <canvas id="myCanvas"></canvas>
-    <script>
-	// Create the scene, camera, and renderer
-	var scene = new THREE.Scene();
-	var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-	var renderer = new THREE.WebGLRenderer({canvas: document.getElementById("myCanvas")});
-	renderer.setPixelRatio(window.devicePixelRatio * 2);
-	renderer.setSize(window.innerWidth, window.innerHeight);
+<canvas id="myCanvas"></canvas>
+<script>
+    // Create the scene, camera, and renderer
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas')});
+    renderer.setPixelRatio(window.devicePixelRatio * 2);
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
-	// Adjust camera aspect ratio
-	function adjustCameraAspect() {
-	    camera.aspect = window.innerWidth / window.innerHeight;
-	    camera.updateProjectionMatrix();
-	}
+    // Adjust camera aspect ratio
+    function adjustCameraAspect() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    }
 
-	// Create a cube
-	var geometry = new THREE.BoxGeometry(3, 3, 3);
-	var material = new THREE.MeshStandardMaterial({color: 0x00ff00});
-	var cube = new THREE.Mesh(geometry, material);
-	scene.add(cube);
+    // Create a cube
+    var geometry = new THREE.BoxGeometry(9, 9, 9);
+    var material = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.5,
+        metalness: 0.5
+    });
+    var cube = new THREE.Mesh(geometry, material);
+    scene.add(cube);
 
-	// Create a light
-	var light = new THREE.DirectionalLight(0xffffff, 1);
-	light.position.set(0, 1, 0);
-	scene.add(light);
+    // Create lights
+    var light1 = new THREE.DirectionalLight(0xffffff, 0.5);
+    light1.position.set(0, 1, 1);
+    scene.add(light1);
 
-	// Create a shadow camera
-	var shadowCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-	shadowCamera.position.copy(camera.position);
+    var light2 = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(light2);
 
-	// Create a shadow renderer
-	var shadowRenderer = new THREE.WebGLRenderer({alpha: true});
-	shadowRenderer.setPixelRatio(window.devicePixelRatio * 2);
-	shadowRenderer.setSize(2048, 2048);
-
-	// Enable shadow rendering
-	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-	// Enable shadow casting and receiving for the cube
-	cube.castShadow = true;
-	cube.receiveShadow = true;
-
-	// Position the camera and render the scene
-	camera.position.z = 5;
-	adjustCameraAspect();
-	renderer.render(scene, camera);
-
-	// Variables to store the mouse position and cube rotation
-	var mouseX = 0, mouseY = 0;
-	var cubeRotation = { x: 0, y: 0 };
-
-	// Add event listeners to track mouse movement
-	document.addEventListener("mousemove", function(event) {
-	  mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-	  mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
-	});
-
-	// Handle window resize
-	window.addEventListener("resize", function() {
-	    adjustCameraAspect();
-	    renderer.setSize(window.innerWidth, window.innerHeight);
-	});
-
-	// Animate the cube rotation and shadow rendering
-function animate() {
-    requestAnimationFrame(animate);
-    cubeRotation.x += (mouseY - cubeRotation.x) * 0.05;
-    cubeRotation.y += (mouseX - cubeRotation.y) * 0.05;
-    cube.rotation.x = cubeRotation.x;
-    cube.rotation.y = cubeRotation.y;
-    light.position.copy(camera.position);
+    // Create a shadow camera
+    var shadowCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
     shadowCamera.position.copy(camera.position);
-    shadowCamera.lookAt(scene.position);
-    shadowRenderer.render(scene, shadowCamera);
+
+    // Create a shadow renderer
+    var shadowRenderer = new THREE.WebGLRenderer({alpha: true});
+    shadowRenderer.setPixelRatio(window.devicePixelRatio * 2);
+    shadowRenderer.setSize(2048, 2048);
+
+    // Enable shadow rendering
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    // Enable shadow casting and receiving for the cube
+    cube.castShadow = true;
+    cube.receiveShadow = true;
+
+    // Position the camera and render the scene
+    camera.position.z = 20;
+    adjustCameraAspect();
     renderer.render(scene, camera);
-}
-animate();
-    </script>
+
+    // Variables to store the mouse position and cube rotation
+    var isDragging = false;
+    var previousMousePosition = {
+        x: 0,
+        y: 0
+    };
+
+    // Handle mouse down event
+    document.addEventListener('mousedown', function (event) {
+        isDragging = true;
+    });
+
+    // Handle mouse up event
+    document.addEventListener('mouseup', function (event) {
+        isDragging = false;
+        previousMousePosition = {
+            x: 0,
+            y: 0
+        };
+    });
+
+    // Handle mouse move event
+    document.addEventListener('mousemove', function (event) {
+        if (isDragging) {
+            var deltaMove = {
+                x: event.offsetX - previousMousePosition.x,
+                y: event.offsetY - previousMousePosition.y
+            };
+
+            cube.rotation.x += deltaMove.y * 0.01;
+            cube.rotation.y += deltaMove.x * 0.01;
+
+            renderer.render(scene, camera);
+        }
+
+        previousMousePosition = {
+            x: event.offsetX,
+            y: event.offsetY
+        };
+    });
+
+    // Animate the cube rotation and shadow rendering
+    function animate() {
+        requestAnimationFrame(animate);
+
+        // Render shadows
+        cube.updateMatrixWorld();
+        shadowCamera.position.copy(camera.position);
+        shadowCamera.lookAt(scene.position);
+        shadowCamera.updateMatrixWorld();
+        shadowRenderer.render(scene, shadowCamera);
+
+        // Render scene
+        renderer.render(scene, camera);
+    }
+
+    animate();
+</script>
 </body>
 </html>
