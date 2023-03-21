@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sternenfeld</title>
+<style>
+    body { margin: 0; background-color: black; }
+    canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="sternenfeld"></canvas>
+<script>
+    const canvas = document.getElementById('sternenfeld');
+    const ctx = canvas.getContext('2d');
+
+    function setCanvasSize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    setCanvasSize();
+
+    window.addEventListener('resize', () => {
+        setCanvasSize();
+        init();
+    });
+
+    const sterneAnzahl = 10000;
+    const sterne = [];
+    const asteroiden = [];
+
+    class Stern {
+        constructor(x, y, z, radius, farbe) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.originalRadius = radius;
+            this.radius = radius;
+            this.farbe = farbe;
+        }
+
+        zeichnenStreifen() {
+            const streifenFaktor = 10;
+            const maxStreifenLaenge = this.radius * streifenFaktor;
+            const streifenLaenge = maxStreifenLaenge * (1 - this.z / canvas.width);
+
+            const grad = Math.atan2(this.y - canvas.height / 2, this.x - canvas.width / 2);
+            const startX = this.x - Math.cos(grad) * streifenLaenge;
+            const startY = this.y - Math.sin(grad) * streifenLaenge;
+
+            if (isFinite(startX) && isFinite(startY) && isFinite(this.x) && isFinite(this.y)) {
+                const verlauf = ctx.createLinearGradient(startX, startY, this.x, this.y);
+                verlauf.addColorStop(0, 'rgba(173, 216, 230, 0)');
+                verlauf.addColorStop(1, `rgba(173, 216, 230, ${1 - this.z / canvas.width})`);
+
+
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(this.x, this.y);
+                ctx.strokeStyle = verlauf;
+                ctx.lineWidth = this.radius;
+                ctx.stroke();
+            }
+        }
+
+        zeichnen() {
+            this.zeichnenStreifen();
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+            ctx.fillStyle = this.farbe;
+            ctx.fill();
+        }
+
+        aktualisieren() {
+            this.z += 0.1;
+            if (this.z >= canvas.width) {
+                this.z = 0;
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.radius = this.originalRadius;
+            }
+
+            const faktor = (canvas.width / (canvas.width - this.z));
+            this.x = (this.x - canvas.width / 2) * faktor + canvas.width / 2;
+            this.y = (this.y - canvas.height / 2) * faktor + canvas.height / 2;
+            this.radius = this.originalRadius * (1 - this.z / canvas.width);
+
+            const transparency = Math.max(0.01, 1 * (1 - Math.pow(this.z / (canvas.width - 200), 4)));
+            this.farbe = `rgba(255, 255, 255, ${(this.z === 0) ? 0 : transparency})`;
+        }
+    }
+
+    function init() {
+        sterne.length = 0;
+        for (let i = 0; i < sterneAnzahl; i++) {
+            const x = Math.random() * canvas.width;
+            const y = Math.random() * canvas.height;
+            const z = Math.random() * (canvas.width - 300) + 300;
+            const radius = Math.random() * 2;
+            const farbe = `rgba(255, 255, 255, ${1 - z / canvas.width})`;
+
+            sterne.push(new Stern(x, y, z, radius, farbe));
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (const stern of sterne) {
+            stern.aktualisieren();
+            stern.zeichnen();
+        }
+    }
+
+    init();
+    animate();
+</script>
+</body>
+</html>
