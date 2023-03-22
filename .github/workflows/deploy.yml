@@ -1,7 +1,8 @@
+name: Deployment
+
 on:
     push:
-        tags:
-            - '*'
+        branches: [ main ]
 
 jobs:
     deploy_job:
