@@ -1,0 +1,23 @@
+on:
+    push:
+        tags:
+            - '*'
+
+jobs:
+    deploy_job:
+        runs-on: ubuntu-latest
+        name: build&deploy
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v2
+
+            -   name: deploy file to server
+                uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+                with:
+                    username: '${{ secrets.USERNAME }}'
+                    password: '${{ secrets.PASSWORD }}'
+                    server: '${{ secrets.SERVER_IP }}'
+                    delete_remote_files: true
+                    local_path: './*'
+                    remote_path: '/srv/pages/marc.it/www/experiments'
+                    sftpArgs: '-o ConnectTimeout=5'
