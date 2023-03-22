@@ -15,3 +15,10 @@ A three dimensional cube, that rotate by mouse movements.
 
 _Best expierence in Google Chrome._
 [Demo](https://marc.it/experiments/cube/)
+
+### Dino
+
+A dinosaur that walks through the mountains.
+
+_Best expierence in Google Chrome._
+[Demo](https://marc.it/experiments/dino/)
